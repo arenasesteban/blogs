@@ -30,7 +30,21 @@ const mostBlogs = blogs => {
             blogs: posts.length
         }))
         .reduce((max, current) =>
-            current.blogs > max.blogs ? current : max, { author: '', blogs: 0});
+            current.blogs > max.blogs ? current : max, { author: '', blogs: 0 });
 };
 
-module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs };
+const mostLikes = blogs => {
+    if(blogs.length === 0) {
+        return null;
+    };
+
+    return Object.entries(_.groupBy(blogs, 'author'))
+        .map(([author, posts]) => ({
+            author, 
+            likes: posts.reduce((acc, post) => acc + post.likes, 0)
+        }))
+        .reduce((max, current) =>
+            current.likes > max.likes ? current : max, { author: '', likes: 0 });
+};
+
+module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes };

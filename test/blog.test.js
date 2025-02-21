@@ -1,6 +1,6 @@
 const { test, describe } = require('node:test');
 const assert = require('node:assert');
-const { dummy, totalLikes, favoriteBlog, mostBlogs } = require('../utils/list_helper');
+const { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes } = require('../utils/list_helper');
 
 const listWithOneBlog = [
     {
@@ -115,6 +115,25 @@ describe('most blogs', () => {
     test('returns the author with most blogs', () => {
         const result = mostBlogs(listWithMultipliesBlogs);
         const expected = { author: 'Robert C. Martin', blogs: 3 };
+        assert.deepStrictEqual(result, expected);
+    });
+});
+
+describe('most likes', () => {
+    test('returns null for an empty list', () => {
+        const result = mostLikes([]);
+        assert.strictEqual(result, null);
+    });
+
+    test('return the only autjor when ther is one blog', () => {
+        const result = mostLikes(listWithOneBlog);
+        const expected = { author: 'Michael Chan', likes: 7 };
+        assert.deepStrictEqual(result, expected);
+    });
+
+    test('return the author with most likes', () => {
+        const result = mostLikes(listWithMultipliesBlogs);
+        const expected = { author: 'Edsger W. Dijkstra', likes: 17 };
         assert.deepStrictEqual(result, expected);
     });
 });
