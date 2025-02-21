@@ -1,8 +1,6 @@
 const { test, describe } = require('node:test');
 const assert = require('node:assert');
-const { dummy, totalLikes, favoriteBlog } = require('../utils/list_helper');
-
-const listWithoutBlogs = [];
+const { dummy, totalLikes, favoriteBlog, mostBlogs } = require('../utils/list_helper');
 
 const listWithOneBlog = [
     {
@@ -68,7 +66,7 @@ test('dummy returns one', () => {
 
 describe('total likes', () => {
     test('of empty list is zero', () => {
-        const result = totalLikes(listWithoutBlogs);
+        const result = totalLikes([]);
         assert.strictEqual(result, 0);
     });
 
@@ -85,11 +83,11 @@ describe('total likes', () => {
 
 describe('favorite blogs', () => {
     test('returns null for an empty list', () => {
-        const result = favoriteBlog(listWithoutBlogs);
+        const result = favoriteBlog([]);
         assert.strictEqual(result, null);
     });
 
-    test('return the only blog when ehre is one', () => {
+    test('return the only blog when there is one', () => {
         const result = favoriteBlog(listWithOneBlog);
         const expected = { title: 'React patterns', author: 'Michael Chan', likes: 7 };
         assert.deepStrictEqual(result, expected);
@@ -102,3 +100,21 @@ describe('favorite blogs', () => {
     });
 });
 
+describe('most blogs', () => {
+    test('returns null for an empty list', () => {
+        const result = mostBlogs([]);
+        assert.strictEqual(result, null);
+    });
+
+    test('return the only author when there is one blog', () => {
+        const result = mostBlogs(listWithOneBlog);
+        const expected = { author: 'Michael Chan', blogs: 1 };
+        assert.deepStrictEqual(result, expected);
+    });
+
+    test('returns the author with most blogs', () => {
+        const result = mostBlogs(listWithMultipliesBlogs);
+        const expected = { author: 'Robert C. Martin', blogs: 3 };
+        assert.deepStrictEqual(result, expected);
+    });
+});
