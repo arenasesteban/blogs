@@ -14,7 +14,6 @@ export default [
             'indent': ['error', 4],
             'semi': ['error', 'always'],
             'quotes': ['error', 'single'],
-            'space-before-function-paren': ['error', 'never'],
             'no-else-return': 'error',
             'prefer-const': 'error',
             'no-multiple-empty-lines': ['error', { 'max': 1 }],
