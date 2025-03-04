@@ -56,6 +56,21 @@ test('likes is set to 0 by default if not provided', async () => {
     assert.strictEqual(response.body.likes, 0);
 });
 
+/* test('responds with status 400 if title or url is missing', async () => {
+    const newBlog = { author: 'Robert C. Martin' };
+
+    await api.post('/api/blogs').send(newBlog).expect(400);
+});
+ */
+
+test('if the title or url is missing, return 400', async () => {
+    const newBlog = { author: 'John' };
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(400);
+});
+
 after(async () => {
     await mongoose.connection.close();
 });

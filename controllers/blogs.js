@@ -12,6 +12,10 @@ blogsRouter.post('/', async (req, res) => {
         likes: req.body.likes || 0
     });
 
+    if(!req.body.title || !req.body.url) {
+        return res.status(400).json({ error: 'title or url missing'});
+    }
+
     const savedBlog = await blog.save();
     res.status(201).json(savedBlog);
 });
