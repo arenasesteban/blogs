@@ -64,13 +64,29 @@ test('responds with status 400 if title or url is missing', async () => {
 
 test('succeeds with status code 204 if blog has been deleted', async () => {
     const blogsAtStart = await Blog.find({});
-    const blogToDelete = await blogsAtStart[0];
+    const blogToDelete = blogsAtStart[0];
 
     await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
 
     const blogsAtEnd = await Blog.find({});
 
     assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1);
+});
+
+test('updates the likes of a blog', async () => {
+    const blogsAtStart = await Blog.find({});
+    const blogToUpdate = blogsAtStart[0];
+    const updatedLikes = 15;
+    
+    await api.put(`/api/blogs/${blogToUpdate.id}`).send({ likes: updatedLikes }).expect(200);
+
+    const blogsAtEnd = await Blog.find({});
+
+    console.log(blogsAtStart, blogsAtEnd);
+
+    const updatedBlog = blogsAtEnd.find(blog => blog.id === blogToUpdate.id);
+
+    assert.strictEqual(updatedBlog.likes, updatedLikes);
 });
 
 after(async () => {
