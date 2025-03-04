@@ -7,7 +7,6 @@ const app = require('../app');
 const api = supertest(app);
 const helper = require('./test_helper');
 const Blog = require('../models/blog');
-const { title } = require('node:process');
 
 beforeEach(async () => {
     await Blog.deleteMany({});
@@ -27,7 +26,7 @@ test('unique identifier called id', async () => {
     assert.strictEqual(response.body.every(blog => blog.id && !blog._id), true);
 });
 
-test('a valid blgo can be added', async () => {
+test('a valid blog can be added', async () => {
     const newBlog = {
         title: 'Type wars',
         author: 'Robert C. Martin',
@@ -43,6 +42,18 @@ test('a valid blgo can be added', async () => {
 
     assert.strictEqual(response.body.length, helper.initialBlogs.length + 1);
     assert(titles.includes('Type wars'));
+});
+
+test('likes is set to 0 by default if not provided', async () => {
+    const newBlog = {
+        title: 'Type wars',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
+    };
+
+    const response = await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/);
+
+    assert.strictEqual(response.body.likes, 0);
 });
 
 after(async () => {
