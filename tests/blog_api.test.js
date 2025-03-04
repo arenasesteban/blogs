@@ -14,10 +14,16 @@ beforeEach(async () => {
     await Blog.insertMany(helper.initialBlogs);
 });
 
-test('notes are returned as json', async () => {
+test('blogs are returned as json', async () => {
     const response = await api.get('/api/blogs').expect(200).expect('Content-Type', /application\/json/);
 
     assert.strictEqual(response.body.length, helper.initialBlogs.length);
+});
+
+test('unique identifier called id', async () => {
+    const response = await api.get('/api/blogs');
+
+    assert.strictEqual(response.body.every(blog => blog.id && !blog._id), true);
 });
 
 after(async () => {
