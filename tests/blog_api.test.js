@@ -1,4 +1,4 @@
-const { test, beforeEach, after } = require('node:test');
+const { test, describe, beforeEach, after } = require('node:test');
 const assert = require('node:assert');
 const mongoose = require('mongoose');
 const supertest = require('supertest');
@@ -7,9 +7,11 @@ const app = require('../app');
 const api = supertest(app);
 const helper = require('./test_helper');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
 beforeEach(async () => {
     await Blog.deleteMany({});
+    await User.deleteMany({});
 
     await Blog.insertMany(helper.initialBlogs);
 });
@@ -84,11 +86,49 @@ test('updates the likes of a blog', async () => {
 
     const blogsAtEnd = await Blog.find({});
 
-    console.log(blogsAtStart, blogsAtEnd);
-
     const updatedBlog = blogsAtEnd.find(blog => blog.id === blogToUpdate.id);
 
     assert.strictEqual(updatedBlog.likes, updatedLikes);
+});
+
+describe('user creation test', () => {
+    test('creates a new user with valid data', async () => {
+        const newUser = {
+            username: 'validuser',
+            name: 'Test User',
+            password: 'validpassword'
+        };
+
+        const response = await api.post('/api/users').send(newUser).expect(201).expect('Content-Type', /application\/json/);
+
+        assert.strictEqual(response.body.username, newUser.username);
+    });
+
+    test('password shorter than 3 characers', async () => {
+        const newUser = {
+            username: 'shortpassuser',
+            name: 'Test User',
+            password: 'pw'
+        };
+
+        const response = await api.post('/api/users').send(newUser).expect(400);
+        
+        assert.strictEqual(response.body.error, 'password is shortan than the minimum allowed length');
+    });
+
+    test('username is not unique', async () => {
+        const newUser = {
+            username: 'uniqueuser',
+            name: 'Test User',
+            password: 'password'
+        };
+
+        await api.post('/api/users').send(newUser).expect(201); 
+
+        const response = await api.post('/api/users').send(newUser).expect(400);
+
+        assert.strictEqual(response.body.error, 'username must be unique');
+    });
 });
 
 after(async () => {

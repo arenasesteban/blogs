@@ -7,20 +7,28 @@ usersRouter.get('/', async (req, res) => {
     res.json(users);
 });
 
-usersRouter.post('/', async (req, res) => {
-    const { username, name, password } = req.body;
+usersRouter.post('/', async (req, res, next) => {
+    try {
+        const { username, name, password } = req.body;
 
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(password, salt);
+        if(password.length < 3) {
+            return res.status(400).json({ error: 'password is shortan than the minimum allowed length' });
+        }
 
-    const user = new User({
-        username, 
-        name,
-        hash
-    });
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(password, salt);
 
-    const savedUser = await user.save();
-    res.status(201).json(savedUser);
+        const user = new User({
+            username, 
+            name,
+            hash
+        });
+
+        const savedUser = await user.save();
+        res.status(201).json(savedUser);
+    } catch(error) {
+        next(error);
+    }
 });
 
 module.exports = usersRouter;
