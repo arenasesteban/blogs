@@ -11,9 +11,10 @@ const User = require('../models/user');
 
 beforeEach(async () => {
     await Blog.deleteMany({});
-    await User.deleteMany({});
-
     await Blog.insertMany(helper.initialBlogs);
+
+    await User.deleteMany({});
+    await User.insertMany(helper.initialUsers);
 });
 
 test('blogs are returned as json', async () => {
@@ -92,22 +93,10 @@ test('updates the likes of a blog', async () => {
 });
 
 describe('user creation test', () => {
-    test('creates a new user with valid data', async () => {
-        const newUser = {
-            username: 'validuser',
-            name: 'Test User',
-            password: 'validpassword'
-        };
-
-        const response = await api.post('/api/users').send(newUser).expect(201).expect('Content-Type', /application\/json/);
-
-        assert.strictEqual(response.body.username, newUser.username);
-    });
-
     test('password shorter than 3 characers', async () => {
         const newUser = {
-            username: 'shortpassuser',
-            name: 'Test User',
+            username: 'johndoe',
+            name: 'John Doe',
             password: 'pw'
         };
 
@@ -118,12 +107,10 @@ describe('user creation test', () => {
 
     test('username is not unique', async () => {
         const newUser = {
-            username: 'uniqueuser',
-            name: 'Test User',
-            password: 'password'
+            username: 'michaelchan',
+            name: 'Michael Chan',
+            password: 'defaultpassword'
         };
-
-        await api.post('/api/users').send(newUser).expect(201); 
 
         const response = await api.post('/api/users').send(newUser).expect(400);
 

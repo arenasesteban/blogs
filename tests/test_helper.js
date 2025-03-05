@@ -31,4 +31,22 @@ const initialBlogs = [
     }
 ];
 
-module.exports = { initialBlogs };
+const initialUsers = [
+    {
+        username: 'michaelchan',
+        name: 'Michael Chan',
+        hash: '$2b$10$ARj2DNh.jPoZZsD.0WK1Heb5GjR6VjtsOm310lFQQxRcPRvPu4Eva'
+    },
+    {
+        username: 'edsgerwdijkstra',
+        name: 'Edsger W. Dijkstra',
+        hash: '$2b$10$ARj2DNh.jPoZZsD.0WK1Heb5GjR6VjtsOm310lFQQxRcPRvPu4Eva'
+    },
+    {
+        username: 'robertcmartin',
+        name: 'Robert C. Martin',
+        hash: '$2b$10$ARj2DNh.jPoZZsD.0WK1Heb5GjR6VjtsOm310lFQQxRcPRvPu4Eva'
+    }
+];
+
+module.exports = { initialBlogs, initialUsers };
