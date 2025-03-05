@@ -27,6 +27,8 @@ test('unique identifier called id', async () => {
 });
 
 test('a valid blog can be added', async () => {
+    const blogsAtStart = await Blog.find({});
+
     const newBlog = {
         title: 'Type wars',
         author: 'Robert C. Martin',
@@ -40,7 +42,7 @@ test('a valid blog can be added', async () => {
 
     const titles = blogsAtEnd.map(e => e.title);
 
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1);
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length + 1);
     assert(titles.includes('Type wars'));
 });
 
