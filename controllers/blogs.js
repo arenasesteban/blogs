@@ -1,35 +1,55 @@
 const blogsRouter = require('express').Router();
+const jwt = require('jsonwebtoken');
 const Blog = require('../models/blog');
 const User = require('../models/user');
+
+const getTokenFrom = req => {
+    const authorization = req.get('authorization');
+    if (authorization && authorization.startsWith('Bearer ')) {
+        return authorization.replace('Bearer ', '');
+    }
+
+    return null;
+};
 
 blogsRouter.get('/', async (req, res) => {
     const blogs = await Blog.find({}).populate('user', { username: 1, name: 1});
     res.json(blogs);
 });
 
-blogsRouter.post('/', async (req, res) => {
-    const { title, author, url, likes, userId } = req.body;
+blogsRouter.post('/', async (req, res, next) => {
+    try {
+        const { title, author, url, likes } = req.body;
 
-    const user = await User.findById(userId);
+        const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET);
 
-    const blog = new Blog({ 
-        title,
-        author,
-        url,
-        likes: likes || 0,
-        user: user.id
-    });
+        if(!decodedToken.id) {
+            return res.status(401).json({ error: 'token invalid' });
+        }
 
-    if(!req.body.title || !req.body.url) {
-        return res.status(400).json({ error: 'title or url missing'});
+        const user = await User.findById(decodedToken.id);
+
+        const blog = new Blog({ 
+            title,
+            author,
+            url,
+            likes: likes || 0,
+            user: user.id
+        });
+
+        if(!req.body.title || !req.body.url) {
+            return res.status(400).json({ error: 'title or url missing'});
+        }
+
+        const savedBlog = await blog.save();
+
+        user.blogs = [...user.blogs, savedBlog.id];
+        await user.save();
+
+        res.status(201).json(savedBlog);
+    } catch(error) {
+        next(error);
     }
-
-    const savedBlog = await blog.save();
-
-    user.blogs = [...user.blogs, savedBlog.id];
-    await user.save();
-
-    res.status(201).json(savedBlog);
 });
 
 blogsRouter.delete('/:id', async (req, res) => {
