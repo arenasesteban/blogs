@@ -32,11 +32,14 @@ test('unique identifier called id', async () => {
 test('a valid blog can be added', async () => {
     const blogsAtStart = await Blog.find({});
 
+    const userId = await User.exists({ name: 'Robert C. Martin' });
+
     const newBlog = {
-        title: 'Type wars',
+        title: 'FP vs. OO List Processing',
         author: 'Robert C. Martin',
         url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-        likes: 2,
+        likes: 0,
+        userId
     };
 
     await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/);
@@ -50,10 +53,13 @@ test('a valid blog can be added', async () => {
 });
 
 test('likes is set to 0 by default if not provided', async () => {
+    const userId = await User.exists({ name: 'Robert C. Martin' });
+
     const newBlog = {
-        title: 'Type wars',
+        title: 'FP vs. OO List Processing',
         author: 'Robert C. Martin',
         url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
+        userId
     };
 
     const response = await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/);
@@ -62,7 +68,12 @@ test('likes is set to 0 by default if not provided', async () => {
 });
 
 test('responds with status 400 if title or url is missing', async () => {
-    const newBlog = { author: 'Robert C. Martin' };
+    const userId = await User.exists({ name: 'Robert C. Martin' });
+
+    const newBlog = {
+        author: 'Robert C. Martin',
+        userId
+    };
 
     await api.post('/api/blogs').send(newBlog).expect(400);
 });
