@@ -1,24 +1,18 @@
 const blogsRouter = require('express').Router();
-const jwt = require('jsonwebtoken');
 const Blog = require('../models/blog');
 const User = require('../models/user');
+const middleware = require('../utils/middleware');
 
 blogsRouter.get('/', async (req, res) => {
     const blogs = await Blog.find({}).populate('user', { username: 1, name: 1});
     res.json(blogs);
 });
 
-blogsRouter.post('/', async (req, res, next) => {
+blogsRouter.post('/',  middleware.userExtractor, async (req, res, next) => {
     try {
         const { title, author, url, likes } = req.body;
 
-        const decodedToken = jwt.verify(req.token, process.env.SECRET);
-
-        if(!decodedToken.id) {
-            return res.status(401).json({ error: 'token invalid' });
-        }
-
-        const user = await User.findById(decodedToken.id);
+        const user = await User.findById(req.user.id);
 
         const blog = new Blog({ 
             title,
@@ -43,19 +37,11 @@ blogsRouter.post('/', async (req, res, next) => {
     }
 });
 
-blogsRouter.delete('/:id', async (req, res, next) => {
+blogsRouter.delete('/:id',  middleware.userExtractor, async (req, res, next) => {
     try {
-        const decodedToken = jwt.verify(req.token, process.env.SECRET);
-
-        if(!decodedToken.id) {
-            return res.status(401).json({ error: 'token invalid' });
-        }
-
         const blog = await Blog.findById(req.params.id);
-
-        console.log(blog);
-
-        if(decodedToken.id !== blog.user.toString()) {
+ 
+        if(req.user.id !== blog.user.toString()) {
             return res.status(401).json({ error: 'permission denied' });
         }
 
