@@ -11,7 +11,6 @@ const middleware = require('./utils/middleware');
 const app = express();
 
 mongoose.set('strictQuery', false);
-
 const url = config.MONGODB_URI;
 
 mongoose.connect(url)
@@ -21,6 +20,8 @@ mongoose.connect(url)
 app.use(cors());
 app.use(express.json());
 app.use(logger);
+
+app.use(middleware.tokenExtractor);
 
 app.use('/api/blogs', blogsRouter);
 app.use('/api/users', usersRouter);
