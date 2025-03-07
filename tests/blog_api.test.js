@@ -9,12 +9,23 @@ const helper = require('./test_helper');
 const Blog = require('../models/blog');
 const User = require('../models/user');
 
+let loginResponse = '';
+
 beforeEach(async () => {
     await Blog.deleteMany({});
     await Blog.insertMany(helper.initialBlogs);
 
     await User.deleteMany({});
     await User.insertMany(helper.initialUsers);
+
+    const user = {
+        username: 'robertcmartin',
+        password: 'defaultpassword'
+    };
+
+    const response = await api.post('/api/login').send(user).expect(200);
+
+    loginResponse = response.body;
 });
 
 test('blogs are returned as json', async () => {
@@ -32,17 +43,14 @@ test('unique identifier called id', async () => {
 test('a valid blog can be added', async () => {
     const blogsAtStart = await Blog.find({});
 
-    const userId = await User.exists({ name: 'Robert C. Martin' });
-
     const newBlog = {
         title: 'FP vs. OO List Processing',
         author: 'Robert C. Martin',
         url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
         likes: 0,
-        userId
     };
 
-    await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/);
+    await api.post('/api/blogs').send(newBlog).set('Authorization', `Bearer ${loginResponse.token}`).expect(201).expect('Content-Type', /application\/json/);
 
     const blogsAtEnd = await Blog.find({});
 
@@ -53,36 +61,30 @@ test('a valid blog can be added', async () => {
 });
 
 test('likes is set to 0 by default if not provided', async () => {
-    const userId = await User.exists({ name: 'Robert C. Martin' });
-
     const newBlog = {
         title: 'FP vs. OO List Processing',
         author: 'Robert C. Martin',
         url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-        userId
     };
 
-    const response = await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/);
+    const response = await api.post('/api/blogs').send(newBlog).set('Authorization', `Bearer ${loginResponse.token}`).expect(201).expect('Content-Type', /application\/json/);
 
     assert.strictEqual(response.body.likes, 0);
 });
 
 test('responds with status 400 if title or url is missing', async () => {
-    const userId = await User.exists({ name: 'Robert C. Martin' });
+    const newBlog = { author: 'Robert C. Martin' };
 
-    const newBlog = {
-        author: 'Robert C. Martin',
-        userId
-    };
-
-    await api.post('/api/blogs').send(newBlog).expect(400);
+    await api.post('/api/blogs').send(newBlog).set('Authorization', `Bearer ${loginResponse.token}`).expect(400);
 });
 
 test('succeeds with status code 204 if blog has been deleted', async () => {
-    const blogsAtStart = await Blog.find({});
-    const blogToDelete = blogsAtStart[0];
+    const blogsAtStart = await  Blog.find({});
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+    const userId = await User.exists({ username: loginResponse.username });
+    const blogToDelete = await Blog.findOne({ user: userId });
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).set('Authorization', `Bearer ${loginResponse.token}`).expect(204);
 
     const blogsAtEnd = await Blog.find({});
 
